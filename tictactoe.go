@@ -1,8 +1,11 @@
 package main
 
 import (
+	"encoding/csv"
 	"fmt"
+	"log"
 	"math/rand"
+	"os"
 	"time"
 
 	"github.com/fatih/color"
@@ -112,8 +115,16 @@ func (t *tictacboard) computer() {
 func (t *tictacboard) check() (string, bool) {
 	for i := 0; i < 3; i++ {
 		if (rune(t[i][0]) == 'x') && (t[i][0] == t[i][1] && t[i][0] == t[i][2]) {
+			err := recordGame("player", true)
+			if err != nil {
+				panic(err)
+			}
 			return "player", true
 		} else if (rune(t[i][0]) == '0') && (t[i][0] == t[i][1]) && (t[i][0] == t[i][2]) {
+			err := recordGame("player", false)
+			if err != nil {
+				panic(err)
+			}
 			return "Computer", true
 		}
 
@@ -121,18 +132,51 @@ func (t *tictacboard) check() (string, bool) {
 
 	for i := 0; i < 3; i++ {
 		if (rune(t[0][i]) == 'x') && (t[0][i] == t[1][i]) && (t[0][i] == t[2][i]) {
+			err := recordGame("player", true)
+			if err != nil {
+				panic(err)
+			}
 			return "Player", true
 		} else if (rune(t[0][i]) == '0') && (t[0][i] == t[1][i]) && (t[0][i] == t[2][i]) {
+			err := recordGame("player", false)
+			if err != nil {
+				panic(err)
+			}
 			return "Computer", true
 		}
 	}
 
 	if ((rune(t[0][0]) == 'x') && (t[0][0] == t[1][1] && t[1][1] == t[2][2])) || ((rune(t[0][2]) == 'x') && (t[0][2] == t[1][1]) && (t[1][1] == t[2][0])) {
+		err := recordGame("player", true)
+		if err != nil {
+			panic(err)
+		}
 		return "player", true
 	} else if ((rune(t[0][0]) == '0') && (t[0][0] == t[1][1]) && (t[1][1] == t[2][2])) || ((rune(t[0][2]) == '0') && (t[0][2] == t[1][1]) && (t[1][1] == t[2][0])) {
+		err := recordGame("player", false)
+		if err != nil {
+			panic(err)
+		}
 		return "Computer", true
 	}
 
+	//TODO: handle draws.
 	return "No one", false
 
+}
+
+func recordGame(player string, isWinner bool) error {
+	f, err := os.OpenFile("./playerdb.csv", os.O_APPEND|os.O_WRONLY, os.ModeAppend)
+	if err != nil {
+		return fmt.Errorf("file did not open: %w", err)
+	}
+	w := csv.NewWriter(f)
+	record := []string{player, fmt.Sprintf("%t", isWinner)}
+	log.Printf("game played %v", record)
+	err = w.Write(record)
+	if err != nil {
+		return fmt.Errorf("game was unable to be recorded. %w", err)
+	}
+	w.Flush()
+	return w.Error()
 }
