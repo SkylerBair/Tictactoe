@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"encoding/csv"
 	"fmt"
 	"log"
@@ -20,7 +21,30 @@ const (
 
 type tictacboard [3][3]rune
 
+var currentPlayer string
+
 func main() {
+
+	m := make(map[string]string)
+
+	m["Dylan"] = "Dylan"
+	m["Skyler"] = "password"
+
+	scanner := bufio.NewScanner(os.Stdin)
+	fmt.Printf("Please enter you username: ")
+	scanner.Scan()
+	username := scanner.Text()
+	if v, ok := m[username]; !ok {
+		fmt.Printf("Username not found")
+		return
+	} else {
+		fmt.Printf("Please enter a new password: ")
+		scanner.Scan()
+		password := scanner.Text()
+		if password == v {
+			currentPlayer = username
+		}
+	}
 
 	rand.Seed(time.Now().UnixNano())
 
@@ -115,13 +139,13 @@ func (t *tictacboard) computer() {
 func (t *tictacboard) check() (string, bool) {
 	for i := 0; i < 3; i++ {
 		if (rune(t[i][0]) == 'x') && (t[i][0] == t[i][1] && t[i][0] == t[i][2]) {
-			err := recordGame("player", true)
+			err := recordGame(currentPlayer, true)
 			if err != nil {
 				panic(err)
 			}
-			return "player", true
+			return currentPlayer, true
 		} else if (rune(t[i][0]) == '0') && (t[i][0] == t[i][1]) && (t[i][0] == t[i][2]) {
-			err := recordGame("player", false)
+			err := recordGame(currentPlayer, false)
 			if err != nil {
 				panic(err)
 			}
@@ -132,13 +156,13 @@ func (t *tictacboard) check() (string, bool) {
 
 	for i := 0; i < 3; i++ {
 		if (rune(t[0][i]) == 'x') && (t[0][i] == t[1][i]) && (t[0][i] == t[2][i]) {
-			err := recordGame("player", true)
+			err := recordGame(currentPlayer, true)
 			if err != nil {
 				panic(err)
 			}
-			return "Player", true
+			return currentPlayer, true
 		} else if (rune(t[0][i]) == '0') && (t[0][i] == t[1][i]) && (t[0][i] == t[2][i]) {
-			err := recordGame("player", false)
+			err := recordGame(currentPlayer, false)
 			if err != nil {
 				panic(err)
 			}
@@ -147,13 +171,13 @@ func (t *tictacboard) check() (string, bool) {
 	}
 
 	if ((rune(t[0][0]) == 'x') && (t[0][0] == t[1][1] && t[1][1] == t[2][2])) || ((rune(t[0][2]) == 'x') && (t[0][2] == t[1][1]) && (t[1][1] == t[2][0])) {
-		err := recordGame("player", true)
+		err := recordGame(currentPlayer, true)
 		if err != nil {
 			panic(err)
 		}
-		return "player", true
+		return currentPlayer, true
 	} else if ((rune(t[0][0]) == '0') && (t[0][0] == t[1][1]) && (t[1][1] == t[2][2])) || ((rune(t[0][2]) == '0') && (t[0][2] == t[1][1]) && (t[1][1] == t[2][0])) {
-		err := recordGame("player", false)
+		err := recordGame(currentPlayer, false)
 		if err != nil {
 			panic(err)
 		}
