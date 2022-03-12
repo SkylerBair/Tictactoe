@@ -31,14 +31,14 @@ func main() {
 	m["Skyler"] = "password"
 
 	scanner := bufio.NewScanner(os.Stdin)
-	fmt.Printf("Please enter you username: ")
+	color.Blue("Please enter you username: ")
 	scanner.Scan()
 	username := scanner.Text()
 	if v, ok := m[username]; !ok {
-		fmt.Printf("Username not found")
+		color.HiRed("Username not found")
 		return
 	} else {
-		fmt.Printf("Please enter a new password: ")
+		color.Blue("Please enter a new password: ")
 		scanner.Scan()
 		password := scanner.Text()
 		if password == v {
@@ -55,7 +55,6 @@ func main() {
 	var board tictacboard
 
 	color.Blue("Strating Game: Board Empty\n")
-	//fmt.Printf(InfoColor, Startmessage)
 
 	board.displayBoard()
 
@@ -67,12 +66,12 @@ func main() {
 
 	for i := 0; i < 9; i++ {
 		if playerMove {
-			fmt.Println("Player Move: ", i+1)
+			color.Cyan("Player Move: ", i+1)
 			time.Sleep(time.Second)
 			board.player()
 			playerMove = false
 		} else {
-			fmt.Println("Computer Move: ", i+1)
+			color.Yellow("Computer Move: ", i+1)
 			time.Sleep(time.Second)
 			board.computer()
 			playerMove = true
@@ -105,21 +104,18 @@ func (t *tictacboard) displayBoard() {
 func (t *tictacboard) player() {
 	var x, y int
 
-	DirectionMessage := ("Enter the Row(1-3 and the Column(1-3 postions: ")
-	fmt.Printf(InfoColor, DirectionMessage)
+	color.Blue("Enter the Row(1-3 and the Column(1-3 postions: ")
 	if _, err := fmt.Scan(&x, &y); err == nil {
 		x--
 		y--
 		if (x >= 0 && x <= 2) && (y >= 0 && y <= 2) && (t[x][y] == 0) {
 			t[x][y] = 'x'
 		} else {
-			ErrorMessage := ("Invalid input or position not empty. Try Again\n")
-			fmt.Printf(ErrorColor, ErrorMessage)
+			color.Red("Invalid input or position not empty. Try Again\n")
 			t.player()
 		}
 	} else {
-		ErrorMessage := ("Invalid input or position not empty. Try Again\n")
-		fmt.Printf(ErrorColor, ErrorMessage)
+		color.Red("Invalid input or position not empty. Try Again\n")
 		t.player()
 	}
 }
@@ -192,14 +188,16 @@ func (t *tictacboard) check() (string, bool) {
 func recordGame(player string, isWinner bool) error {
 	f, err := os.OpenFile("./playerdb.csv", os.O_APPEND|os.O_WRONLY, os.ModeAppend)
 	if err != nil {
-		return fmt.Errorf("file did not open: %w", err)
+		OpenFileError := fmt.Errorf("file did not open: %w", err)
+		return fmt.Errorf(ErrorColor, OpenFileError)
 	}
 	w := csv.NewWriter(f)
 	record := []string{player, fmt.Sprintf("%t", isWinner)}
 	log.Printf("game played %v", record)
 	err = w.Write(record)
 	if err != nil {
-		return fmt.Errorf("game was unable to be recorded. %w", err)
+		GameLogError := fmt.Errorf("game was unable to be recorded. %w", err)
+		return fmt.Errorf(ErrorColor, GameLogError)
 	}
 	w.Flush()
 	return w.Error()
