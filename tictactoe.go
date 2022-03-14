@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"encoding/csv"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"math/rand"
 	"os"
@@ -32,21 +33,63 @@ func main() {
 	m["kelsie"] = "kelsielikesbuts"
 
 	scanner := bufio.NewScanner(os.Stdin)
-	color.Blue("Please enter your username: ")
+	color.Blue("*UNLTIMATE TIC TAC TOE*\n enter 1 to login: , Enter 2 to see rules: , Enter 3 to create login: ")
+	scanner.Scan()
+	menuinput := scanner.Text()
+	switch menuinput {
+	case "1":
+		color.Blue("Please enter your username: ")
+		scanner.Scan()
+		username := scanner.Text()
+		if v, ok := m[username]; !ok {
+			color.HiRed("Username not found")
+			return
+		} else {
+			color.Blue("Please enter your password: ")
+			scanner.Scan()
+			password := scanner.Text()
+			if password == v {
+				currentPlayer = username
+			}
+		}
+	case "2":
+		rules, err := ioutil.ReadFile("rules.txt")
+		if err != nil {
+			fmt.Println("File Read Error ")
+		}
+		fmt.Println(string(rules))
+		return
+	case "3":
+		color.Blue("Please enter you a new username: \n")
+		scanner.Scan()
+		newusername := scanner.Text()
+		m[newusername] = ""
+		color.Blue("Enter A new password: \n")
+		scanner.Scan()
+		newpassword := scanner.Text()
+		m[newusername] = newpassword
+		color.Blue("Your new username and password have been created, Thank you!\n")
+		return
+
+	default:
+		color.Red("NOT A VALID INPUT")
+		return
+	}
+	/*color.Blue("Please enter your username: ")
 	scanner.Scan()
 	username := scanner.Text()
 	if v, ok := m[username]; !ok {
 		color.HiRed("Username not found")
 		return
 	} else {
-		color.Blue("Please enter a password: ")
+		color.Blue("Please enter your password: ")
 		scanner.Scan()
 		password := scanner.Text()
 		if password == v {
 			currentPlayer = username
 		}
 	}
-
+	*/
 	rand.Seed(time.Now().UnixNano())
 
 	var playerMove bool
