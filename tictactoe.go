@@ -29,16 +29,17 @@ func main() {
 
 	m["Dylan"] = "Dylan"
 	m["Skyler"] = "password"
+	m["kelsie"] = "kelsielikesbuts"
 
 	scanner := bufio.NewScanner(os.Stdin)
-	color.Blue("Please enter you username: ")
+	color.Blue("Please enter your username: ")
 	scanner.Scan()
 	username := scanner.Text()
 	if v, ok := m[username]; !ok {
 		color.HiRed("Username not found")
 		return
 	} else {
-		color.Blue("Please enter a new password: ")
+		color.Blue("Please enter a password: ")
 		scanner.Scan()
 		password := scanner.Text()
 		if password == v {
@@ -66,12 +67,12 @@ func main() {
 
 	for i := 0; i < 9; i++ {
 		if playerMove {
-			color.Cyan("Player Move: ", i+1)
+			fmt.Println("Player Move: ", i+1)
 			time.Sleep(time.Second)
 			board.player()
 			playerMove = false
 		} else {
-			color.Yellow("Computer Move: ", i+1)
+			fmt.Println("Computer Move: \n", i+1)
 			time.Sleep(time.Second)
 			board.computer()
 			playerMove = true
