@@ -3,7 +3,9 @@ package main
 import (
 	"bufio"
 	"encoding/csv"
+	"errors"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
 	"math/rand"
@@ -62,37 +64,47 @@ func main() {
 		}
 		fmt.Println(string(rules))
 		return
+
 	case "3":
 		color.Blue("Please enter a new username: \n")
 		scanner.Scan()
 		newusername := scanner.Text()
-		color.Blue("Please enter a new password: \n")
-		scanner.Scan()
-		newpassword := scanner.Text()
-		f, err := os.OpenFile("./usernamedb.csv", os.O_APPEND|os.O_WRONLY, os.ModeAppend)
+		_, _, err := getUserByUserName(newusername)
 		if err != nil {
-			fmt.Printf("file did not open: %v", err)
-			return
-		}
-		w := csv.NewWriter(f)
-		ts := time.Now().String()
+			if errors.Is(err, io.EOF) {
+				color.Blue("Please enter a new password: \n")
+				scanner.Scan()
+				newpassword := scanner.Text()
+				f, err := os.OpenFile("./usernamedb.csv", os.O_APPEND|os.O_WRONLY, os.ModeAppend)
+				if err != nil {
+					fmt.Printf("file did not open: %v", err)
+					return
+				}
+				w := csv.NewWriter(f)
+				ts := time.Now().String()
 
-		record := []string{newusername, newpassword, ts}
-		err = w.Write(record)
-		if err != nil {
-			UserLogError := fmt.Errorf("user was unable to be recorded. %w", err)
-			fmt.Printf(ErrorColor, UserLogError)
+				record := []string{newusername, newpassword, ts}
+				err = w.Write(record)
+				if err != nil {
+					UserLogError := fmt.Errorf("user was unable to be recorded. %w", err)
+					fmt.Printf(ErrorColor, UserLogError)
+					return
+				}
+				w.Flush()
+				err = w.Error()
+				if err != nil {
+					FlushError := fmt.Errorf("error flushing the file, %w", err)
+					fmt.Printf(ErrorColor, FlushError)
+					return
+				}
+				log.Printf("Username created %v", newusername)
+				currentPlayer = newusername
+				return
+			}
+			color.Red("server error: %v", err)
 			return
 		}
-		w.Flush()
-		err = w.Error()
-		if err != nil {
-			FlushError := fmt.Errorf("error flushing the file, %w", err)
-			fmt.Printf(ErrorColor, FlushError)
-			return
-		}
-		log.Printf("Username created %v", newusername)
-		currentPlayer = newusername
+
 	default:
 		color.Red("NOT A VALID INPUT")
 		return
