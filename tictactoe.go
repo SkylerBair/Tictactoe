@@ -41,21 +41,24 @@ func main() {
 		color.Blue("Please enter your username: ")
 		scanner.Scan()
 		username := scanner.Text()
-		if v, ok := m[username]; !ok {
-			color.HiRed("Username not found")
+		_, p, err := getUserByUserName(username)
+		if err != nil {
+			color.Red("failed to get username: %v", err)
 			return
-		} else {
-			color.Blue("Please enter your password: ")
-			scanner.Scan()
-			password := scanner.Text()
-			if password == v {
-				currentPlayer = username
-			}
 		}
+		color.Blue("please enter your password: ")
+		scanner.Scan()
+		password := scanner.Text()
+		if password != p {
+			color.Red("incorrect password: %v", err)
+			return
+		}
+
 	case "2":
 		rules, err := ioutil.ReadFile("rules.txt")
 		if err != nil {
-			fmt.Println("File Read Error ")
+			color.Red("File Read Error ")
+			return
 		}
 		fmt.Println(string(rules))
 		return
@@ -264,6 +267,25 @@ func recordGame(player string, isWinner bool) error {
 	}
 	w.Flush()
 	return w.Error()
+}
+
+func getUserByUserName(value string) (string, string, error) {
+	f, err := os.OpenFile("./usernamedb.csv", os.O_APPEND|os.O_RDONLY, os.ModeAppend)
+	if err != nil {
+		OpenFileError := fmt.Errorf("file did not open: %w", err)
+		return "", "", fmt.Errorf(ErrorColor, OpenFileError)
+	}
+	defer f.Close()
+	r := csv.NewReader(f)
+	for {
+		rec, err := r.Read()
+		if err != nil {
+			return "", "", fmt.Errorf("failed to read row: %w", err)
+		}
+		if rec[0] == value {
+			return rec[0], rec[1], nil
+		}
+	}
 }
 
 /*func recordNewUser(username, string) error {
