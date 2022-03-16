@@ -30,7 +30,7 @@ func main() {
 
 	m["Dylan"] = "Dylan"
 	m["Skyler"] = "password"
-	m["kelsie"] = "kelsielikesbuts"
+	m["kelsie"] = "kelsielikesbutts"
 
 	scanner := bufio.NewScanner(os.Stdin)
 	color.Blue("*UNLTIMATE TIC TAC TOE*\n enter 1 to login: , Enter 2 to see rules: , Enter 3 to create login: ")
@@ -60,36 +60,55 @@ func main() {
 		fmt.Println(string(rules))
 		return
 	case "3":
-		color.Blue("Please enter you a new username: \n")
+		color.Blue("Please enter a new username: \n")
 		scanner.Scan()
 		newusername := scanner.Text()
-		m[newusername] = ""
-		color.Blue("Enter A new password: \n")
+		color.Blue("Please enter a new password: \n")
 		scanner.Scan()
 		newpassword := scanner.Text()
-		m[newusername] = newpassword
-		color.Blue("Your new username and password have been created, Thank you!\n")
-		return
+		f, err := os.OpenFile("./usernamedb.csv", os.O_APPEND|os.O_WRONLY, os.ModeAppend)
+		if err != nil {
+			fmt.Printf("file did not open: %v", err)
+			return
+		}
+		w := csv.NewWriter(f)
+		ts := time.Now().String()
 
+		record := []string{newusername, newpassword, ts}
+		err = w.Write(record)
+		if err != nil {
+			UserLogError := fmt.Errorf("user was unable to be recorded. %w", err)
+			fmt.Printf(ErrorColor, UserLogError)
+			return
+		}
+		w.Flush()
+		err = w.Error()
+		if err != nil {
+			FlushError := fmt.Errorf("error flushing the file, %w", err)
+			fmt.Printf(ErrorColor, FlushError)
+			return
+		}
+		log.Printf("Username created %v", newusername)
+		currentPlayer = newusername
 	default:
 		color.Red("NOT A VALID INPUT")
 		return
 	}
-	/*color.Blue("Please enter your username: ")
-	scanner.Scan()
-	username := scanner.Text()
-	if v, ok := m[username]; !ok {
-		color.HiRed("Username not found")
-		return
-	} else {
-		color.Blue("Please enter your password: ")
-		scanner.Scan()
-		password := scanner.Text()
-		if password == v {
-			currentPlayer = username
-		}
-	}
-	*/
+	// color.Blue("Please enter your username: ")
+	// scanner.Scan()
+	// username := scanner.Text()
+	// if v, ok := m[username]; !ok {
+	// 	color.HiRed("Username not found")
+	// 	return
+	// } else {
+	// 	color.Blue("Please enter your password: ")
+	// 	scanner.Scan()
+	// 	password := scanner.Text()
+	// 	if password == v {
+	// 		currentPlayer = username
+	// 	}
+	// }
+
 	rand.Seed(time.Now().UnixNano())
 
 	var playerMove bool
@@ -246,3 +265,22 @@ func recordGame(player string, isWinner bool) error {
 	w.Flush()
 	return w.Error()
 }
+
+/*func recordNewUser(username, string) error {
+	f, err := os.OpenFile("./usernamedb.csv", os.O_APPEND|os.O_WRONLY, os.ModeAppend)
+	if err != nil {
+		OpenFileError := fmt.Errorf("file did not opem: %w", err)
+		return fmt.Errorf(ErrorColor, OpenFileError)
+	}
+	w := csv.NewWriter(f)
+	record := newusername
+	log.Printf("game played %v", record)
+	err = w.Write(record)
+	if err != nil {
+		UserLogError := fmt.Errorf("User was unable to be recorded. %w", err)
+		return fmt.Errorf(ErrorColor, UserLogError)
+	w.Flush()
+	return w.Error()
+}
+}
+*/
