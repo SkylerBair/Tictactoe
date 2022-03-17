@@ -28,18 +28,13 @@ var currentPlayer string
 
 func main() {
 
-	m := make(map[string]string)
-
-	m["Dylan"] = "Dylan"
-	m["Skyler"] = "password"
-	m["kelsie"] = "kelsielikesbutts"
-
 	scanner := bufio.NewScanner(os.Stdin)
 	color.Blue("*UNLTIMATE TIC TAC TOE*\n enter 1 to login: , Enter 2 to see rules: , Enter 3 to create login: ")
 	scanner.Scan()
 	menuinput := scanner.Text()
 	switch menuinput {
 	case "1":
+		//do you think that this should be recatored even more or does this seem fluid?
 		color.Blue("Please enter your username: ")
 		scanner.Scan()
 		username := scanner.Text()
@@ -55,17 +50,9 @@ func main() {
 			color.Red("incorrect password: %v", err)
 			return
 		}
+		color.Blue("Enter 1 to start game: \nEnter 2 to look at game log: ")
 
 	case "2":
-		rules, err := ioutil.ReadFile("rules.txt")
-		if err != nil {
-			color.Red("File Read Error ")
-			return
-		}
-		fmt.Println(string(rules))
-		return
-
-	case "3":
 		color.Blue("Please enter a new username: \n")
 		scanner.Scan()
 		newusername := scanner.Text()
@@ -75,54 +62,27 @@ func main() {
 				color.Blue("Please enter a new password: \n")
 				scanner.Scan()
 				newpassword := scanner.Text()
-				f, err := os.OpenFile("./usernamedb.csv", os.O_APPEND|os.O_WRONLY, os.ModeAppend)
-				if err != nil {
-					fmt.Printf("file did not open: %v", err)
-					return
-				}
-				w := csv.NewWriter(f)
-				ts := time.Now().String()
-
-				record := []string{newusername, newpassword, ts}
-				err = w.Write(record)
-				if err != nil {
-					UserLogError := fmt.Errorf("user was unable to be recorded. %w", err)
-					fmt.Printf(ErrorColor, UserLogError)
-					return
-				}
-				w.Flush()
-				err = w.Error()
-				if err != nil {
-					FlushError := fmt.Errorf("error flushing the file, %w", err)
-					fmt.Printf(ErrorColor, FlushError)
-					return
-				}
-				log.Printf("Username created %v", newusername)
-				currentPlayer = newusername
+				createNewUser(newusername, newpassword)
 				return
 			}
 			color.Red("server error: %v", err)
 			return
 		}
 
+	case "3":
+		// Question??: is this something that is worth refactoring down where it is already so small or is it still a good idea for readability? if so how?
+		rules, err := ioutil.ReadFile("rules.txt")
+		if err != nil {
+			color.Red("File Read Error ")
+			return
+		}
+		fmt.Println(string(rules))
+		return
+
 	default:
 		color.Red("NOT A VALID INPUT")
 		return
 	}
-	// color.Blue("Please enter your username: ")
-	// scanner.Scan()
-	// username := scanner.Text()
-	// if v, ok := m[username]; !ok {
-	// 	color.HiRed("Username not found")
-	// 	return
-	// } else {
-	// 	color.Blue("Please enter your password: ")
-	// 	scanner.Scan()
-	// 	password := scanner.Text()
-	// 	if password == v {
-	// 		currentPlayer = username
-	// 	}
-	// }
 
 	rand.Seed(time.Now().UnixNano())
 
@@ -300,21 +260,29 @@ func getUserByUserName(value string) (string, string, error) {
 	}
 }
 
-/*func recordNewUser(username, string) error {
+func createNewUser(user string, pass string) (string, string, error) {
 	f, err := os.OpenFile("./usernamedb.csv", os.O_APPEND|os.O_WRONLY, os.ModeAppend)
 	if err != nil {
-		OpenFileError := fmt.Errorf("file did not opem: %w", err)
-		return fmt.Errorf(ErrorColor, OpenFileError)
+		openFileError := fmt.Errorf("file did not open: %v", err)
+		return "", "", openFileError
 	}
 	w := csv.NewWriter(f)
-	record := newusername
-	log.Printf("game played %v", record)
+	ts := time.Now().String()
+
+	record := []string{user, pass, ts}
 	err = w.Write(record)
 	if err != nil {
-		UserLogError := fmt.Errorf("User was unable to be recorded. %w", err)
-		return fmt.Errorf(ErrorColor, UserLogError)
+		UserLogError := fmt.Errorf("user was unable to be recorded. %w", err)
+		return "", "", UserLogError
+	}
 	w.Flush()
-	return w.Error()
+	err = w.Error()
+	if err != nil {
+		FlushError := fmt.Errorf("error flushing the file, %w", err)
+		fmt.Printf(ErrorColor, FlushError)
+		return "", "", err
+	}
+	log.Printf("Username created %v", user)
+	currentPlayer = user
+	return "", "", err
 }
-}
-*/
