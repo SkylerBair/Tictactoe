@@ -50,7 +50,7 @@ func main() {
 			color.Red("incorrect password: %v", err)
 			return
 		}
-		color.Blue("Enter 1 to start game: \nEnter 2 to look at game log: ")
+		//color.Blue("Enter 1 to start game: \nEnter 2 to look at game log: ")
 
 	case "2":
 		color.Blue("Please enter a new username: \n")
